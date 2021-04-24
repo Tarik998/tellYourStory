@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+
+        #stories-body{
+
+
+
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.tarik{
+    width:50%;
+   height:10%;
+
+   margin-top:4.5%;
+   margin-bottom: 4.5%;
+}
+
+.deleteButton{
+
+    width:10%;
+    height:10%;
+    margin-bottom:0%;
+    margin-left: 80%;
+
+}
+.approveButton{
+
+    width:10%;
+    height:10%;
+    margin-bottom:0%;
+    margin-left: 0%;
+
+}
+
+body {
+   background-image: url('Background-Images-For-Websites-003.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+    </style>
+    </script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+    <title>Admin</title>
+</head>
+<body>
+<div id="header"></div>
+
+<div id = "stories-body"></div>
+<div class="modal fade" id="confimDeletion" tabindex="-1" role="dialog" aria-labelledby="confirmDeletion" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Izbriši priču</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteStory()">Izbriši</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+function loadTable(){
+    console.log("test");
+    $.ajax({
+        type: 'GET',
+        url: '/api/story',
+        data: {
+            format: 'json'
+        },
+        error: function() {
+            var $error = $('<h1>').text('An error has occurred');
+            $('#stories-body').append($error);
+        },
+        dataType: 'json',
+        success: function(data) {
+            $('#stories-body').empty();
+            data.forEach(element => {
+                var id = $('<td></td>').text(element.id);
+                var div = $('<div></div>').addClass('card text-white bg-dark mb-3 tarik');
+                var divAuthor = $('<div></div>').addClass('card-header');
+                var divTitle = $('<h5></h5>').addClass('card-title');
+                var  divContent = $('<p></p>').addClass('card-text');
+                var deleteButton = $("<button type='button' class='btn btn-danger deleteButton' onclick ='showDeleteStoryDialog("+element.id+")'>Izbriši</button>");
+                var approveButton = $("<button type='button'  class='btn btn-success approveButton'   onclick ='approved("+element.id+")'>Odobri</button>");
+
+
+                var title = $('<h5></h5>').text(element.title);
+                var author = $('<div></div>').text(element.author);
+                var content = $('<p></p>').text(element.content);
+
+                divAuthor.append(author);
+                div.append(divAuthor);
+
+
+                divTitle.append(title);
+                div.append(divTitle);
+
+                divContent.append(content);
+                divContent.append(approveButton);
+                divContent.append(deleteButton);
+                div.append(divContent);
+
+                if(element.approved == false){
+                $('#stories-body').append(div);
+            }
+            });
+
+        }
+    });
+}
+
+function approved(id){
+
+
+    $.ajax({
+            type: 'PUT',
+            url: '/api/story/' + id,
+            error: function () {
+        var $error = $('<h1>').text('An error has occurred');
+        $('#stories-body').append($error);
+      },
+            success: function(data) {
+                loadTable();
+            }
+        });
+}
+
+
+
+
+
+function showDeleteStoryDialog(id){
+    $("#confimDeletion").modal("show");
+    selectedStory = id;
+}
+
+function deleteStory(){
+    console.log("delete : " + selectedStory);
+    $.ajax({
+        type: 'DELETE',
+        url: '/api/story/'+selectedStory,
+        error: function() {
+            var $error = $('<h1>').text('An error has occurred');
+            $('#stories-body').append($error);
+        },
+        success: function(data) {
+            loadTable();
+        }
+    });
+}
+
+$(document).ready(function(){
+     $("#header").load("components/header.html");
+});
+$(document).ready(function(){
+    loadTable();
+});
+
+</script>
+</html>

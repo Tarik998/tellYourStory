@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+
+        #stories-body{
+
+
+
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.tarik{
+    width:50%;
+   height:10%;
+
+   margin-top:4.5%;
+   margin-bottom: 4.5%;
+
+
+
+}
+body {
+   background-image: url('Background-Images-For-Websites-003.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+.ddislikeButton{
+
+    width:15%;
+    height:10%;
+    margin-bottom:0%;
+    margin-left: 70%;
+
+}
+.llikeButton{
+
+    width:15%;
+    height:10%;
+    margin-bottom:0%;
+    margin-left: 0%;
+
+}
+
+.loadMoreButton{
+
+       margin-left:42%;
+}
+.divAuthor date{
+
+    margin-left:100;
+
+
+}
+
+    </style>
+    <script>
+    var selectedStory;
+</script>
+    <meta charset="UTF-8">
+    <title>Ispričaj svoju priču</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+
+
+
+<div id="header"></div>
+<div id = "stories-body"></div>
+    <script>
+function loadTable(){
+    console.log("test");
+    $.ajax({
+        type: 'GET',
+        url: '/api/story',
+        data: {
+            format: 'json'
+        },
+        error: function() {
+            var $error = $('<h1>').text('An error has occurred');
+            $('#books').append($error);
+        },
+        dataType: 'json',
+        success: function(data) {
+            $('#stories-body').empty();
+
+            data.forEach(element => {
+
+                var div = $('<div></div>').addClass('card text-white bg-dark mb-3 tarik');
+                var cardBody = $('<div></div>').addClass('card-body');
+                var divAuthor = $('<div></div>').addClass('card-header');
+                var divTitle = $('<h3></h3>').addClass('card-title');
+                var  divContent = $('<p></p>').addClass('card-text');
+                var likeButton = $("<button type='button' class='btn btn-outline-primary  llikeButton'   onclick ='likeFunction("+element.id+")'>Like</button>");
+                var dislikeButton = $("<button type='button' class='btn btn-outline-danger ddislikeButton'   onclick ='dislikeFunction("+element.id+")'>Dislike</button>");
+                var loadMoreButton = $("<button type='button' class='btn btn-outline-primary loadMoreButton'   onclick ='loadMore("+element.id+")'>Load more</button>");
+
+
+                var title = $('<h3></h3>').text(element.title);
+
+                var author = $('<div></div>').text(element.author);
+
+                var content = $('<p class="card-text-inner-short"></p>').text(element.content.slice(0, 50) + '...');
+
+                var contentFull = $('<p class="card-text-inner-full"></p>').text(element.content);
+
+                var date = $('<span></span>').text(element.date);
+
+
+
+
+
+
+                divAuthor.append(author);
+                divAuthor.append(date);
+                div.append(divAuthor);
+
+
+                divTitle.append(title);
+                div.append(divTitle);
+
+
+                divContent.append(content);
+                divContent.append(contentFull);
+                divContent.append(likeButton);
+                divContent.append(dislikeButton);
+                divContent.append(loadMoreButton);
+                div.append(divContent);
+
+                if(element.content.length > 50)
+                {
+                    contentFull.hide();
+                } else
+                {
+                    content.hide();
+                    loadMoreButton.hide();
+                }
+
+                likeButton.append($('<span></span>').text(' ' + element.llike));
+                dislikeButton.append($('<span></span>').text(' ' + element.ddislike));
+
+
+
+
+                if(element.approved == true){
+                $('#stories-body').append(div);
+
+            }});
+
+}
+    });
+}
+
+function likeFunction(id){
+
+
+     $.ajax({
+            type: 'PUT',
+            url: '/api/story/llike/' +id,
+            error: function () {
+        var $error = $('<h1>').text('An error has occurred');
+        $('#stories').append($error);
+      },
+            success: function(data) {
+                loadTable();
+            }
+        });
+}
+
+function dislikeFunction(id){
+
+
+    $.ajax({
+            type: 'PUT',
+            url: '/api/story/ddislike/' +id,
+            error: function () {
+        var $error = $('<h1>').text('An error has occurred');
+        $('#stories').append($error);
+      },
+            success: function(data) {
+                loadTable();
+            }
+        });
+}
+
+function loadMore(id) {
+    var divContentShort = $('.card-text-inner-short');
+    var divContentFull = $('.card-text-inner-full');
+    var loadMoreButton = $('.loadMoreButton');
+    loadMoreButton.hide();
+    divContentShort.hide();
+    divContentFull.show();
+
+}
+
+
+
+$(document).ready(function(){
+     $("#header").load("components/header.html");
+});
+$(document).ready(function(){
+    loadTable();
+});
+
+</script>
+</body>
+</html>
